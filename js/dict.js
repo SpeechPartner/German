@@ -167,3 +167,32 @@ if (typeof DICT_PDF_FIX_EN !== "undefined") {
   if (typeof DICT_PDF_FIX_DE !== "undefined") applyFix("de", DICT_PDF_FIX_DE);
   if (typeof DICT_PDF_FIX_FR !== "undefined") applyFix("fr", DICT_PDF_FIX_FR);
 })();
+
+// Basiswoorden gaan voor: de PDF-correcties hierboven zetten een paar veelgebruikte woorden op een minder gangbare
+// betekenis (werk -> obra, neuf -> nuevo). Voor deze woorden geldt weer de gewone betekenis.
+(function () {
+  var VOORRANG = {
+    nl: "laat=tarde|vakantie=vacaciones|werk=trabajo|kantoor=oficina|computer=ordenador|blij=contento|bang=asustado|gezond=sano|druk=ocupado|rustig=tranquilo|goed=bien|leer=aprendo|rust=descanso|wacht=espero|hoop=espero|partner=pareja|verhaal=historia|plan=plan|keuze=elección",
+    de: "sie=ella|heute=hoy|an=a|weiß=sé|laufen=caminar|arm=pobre|speisekarte=carta",
+    fr: "bois=bebo|marcher=caminar|sentir=sentir|son=su|neuf=nueve"
+  };
+  // Omgekeerde richting (Spaans -> taal): de gewone vertaling van veelgebruikte woorden
+  var VOORRANG_ES = {
+    nl: "día=dag|noche=nacht",
+    en: "casa=house|trabajo=work|noche=night|amiga=friend|bien=well|mal=badly|gracias=thank you",
+    de: "trabajo=Arbeit|malo=schlecht|hacer=machen|noche=Nacht|tienda=Geschäft",
+    fr: "malo=mauvais|nuevo=nouveau|puerta=porte|también=aussi|médico=médecin|noche=nuit|agua=eau"
+  };
+  Object.keys(VOORRANG_ES).forEach(function (l) {
+    if (!REVS[l]) return;
+    VOORRANG_ES[l].split("|").forEach(function (p) { var i = p.indexOf("="); REVS[l][p.slice(0, i)] = p.slice(i + 1); });
+  });
+  Object.keys(VOORRANG).forEach(function (l) {
+    if (!DICTS[l]) return;
+    VOORRANG[l].split("|").forEach(function (p) {
+      var i = p.indexOf("="), k = p.slice(0, i), v = p.slice(i + 1);
+      DICTS[l][k] = v;
+      if (REVS[l] && REVS[l][v] === undefined) REVS[l][v] = k;
+    });
+  });
+})();
