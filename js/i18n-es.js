@@ -1,6 +1,8 @@
 // Spaanse vertaling van de interface. Sleutel: de Nederlandse tekst. "castellano" = de eigen taal, "español" = de taal die je leert (wordt per app vervangen).
 var ES_UI = {"Andere manieren om dit te zeggen:":"Otras formas de decirlo:",
 "SpeechPartner.Spanish":"SpeechPartner.Spanish",
+"Webshop":"Tienda",
+"Nog geen volledige zinsvertaling. Tik op Verbeter vertaling om er een toe te voegen.":"Todavía no hay una traducción completa de la frase. Toca Corregir la traducción para añadir una.",
 "Instellingen":"Ajustes",
 "Taal":"Idioma",
 "Thema":"Tema",
