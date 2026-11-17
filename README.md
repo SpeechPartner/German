@@ -1,4 +1,4 @@
-# Speech Partner.German
+# SpeechPartner.German
 
 Een gratis, offline werkende app (PWA) om Duits te gebruiken in gesprekken. Geen account, geen server, geen kosten.
 

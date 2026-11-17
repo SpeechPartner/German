@@ -6,7 +6,7 @@ var DOELTAAL = (function () {
   var T = (typeof DOEL !== "undefined") ? DOEL : "es";
   var ALL = ["nl", "en", "de", "fr", "es"];
   var CFG = {
-    es: { app: "Speech Partner.Spanish", bcp: "es-ES", whisper: "spanish", def: "nl" },
+    es: { app: "SpeechPartner.Spanish", bcp: "es-ES", whisper: "spanish", def: "nl" },
     de: { app: "Speech Partner.German", bcp: "de-DE", whisper: "german", def: "nl" },
     fr: { app: "Speech Partner.French", bcp: "fr-FR", whisper: "french", def: "nl" },
     en: { app: "Speech Partner.English", bcp: "en-GB", whisper: "english", def: "nl" },
