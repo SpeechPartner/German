@@ -6,4 +6,6 @@ Deze map is een complete app. Zet de **inhoud** van deze map in een eigen GitHub
 Webadres: https://speechpartner.github.io/German/
 Gebruik niet de repository van de Spaanse app: elke taal heeft zijn eigen repository en zijn eigen webadres.
 
-Versie 2.1
+Stemmen: natuurlijke spraak met Piper (open source, MIT). Stem: Thorsten (CC0).
+
+Versie 2.5
