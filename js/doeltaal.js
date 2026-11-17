@@ -61,8 +61,7 @@ var DOELTAAL = (function () {
     "Geen gesprek nog. Tik op de microfoon en zeg bijvoorbeeld ¿Qué tal?": null
   };
   // Uitlegregels en onderdelen die vervallen (over Zin bouwen, Regels en grammatica)
-  var DROP = ["Zin bouwen", "Regels", "Grammatica: korte regels met voorbeelden en het waarom.", "Grammatica: lees de korte regels met voorbeelden en het waarom.",
-    "Bij sommige zinnen kun je met 'Bouw verder' zelf een zin maken.", "Bij sommige zinnen kun je met 'Bouw verder →' zelf een zin maken."];
+  var DROP = [];
   var ui = ALL.filter(function (l) { return l !== T; });
   if (T === "es") ui = ["nl", "en", "de", "fr"];
   function vervalt(o) { return T !== "es" && o && DROP.indexOf(o.k) >= 0; }

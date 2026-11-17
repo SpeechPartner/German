@@ -426,6 +426,8 @@ var ZIN_LEX = (function () {
       fr: { inf: "partir", pres: "pars pars part partons partez partent", pp: "parti", aux: "e" } },
     salir: { es: { pres: "salgo sales sale salimos salís salen" }, en: { b: "go", s3: "goes", past: "went", ing: "going", tail: "out" },
       de: { inf: "gehen", sep: "aus", pp: "ausgegangen", aux: "s" }, fr: { inf: "sortir", pres: "sors sors sort sortons sortez sortent", pp: "sorti", aux: "e" } },
+    partir: { es: { pres: "parto partes parte partimos partís parten" }, en: { b: "leave", s3: "leaves", past: "left", ing: "leaving" },
+      de: { inf: "fahren", pres: "fahre fährst fährt fahren fahrt fahren", sep: "ab", pp: "abgefahren", aux: "s" }, fr: { inf: "partir", pres: "pars pars part partons partez partent", pp: "parti", aux: "e" } },
     volver: { es: { pres: "vuelvo vuelves vuelve volvemos volvéis vuelven" }, en: { b: "come", past: "came", ing: "coming", tail: "back" },
       de: { inf: "kommen", sep: "zurück", pp: "zurückgekommen", aux: "s" }, fr: { inf: "revenir", pres: "reviens reviens revient revenons revenez reviennent", pp: "revenu", aux: "e" } },
     empezar: { es: { pres: "empiezo empiezas empieza empezamos empezáis empiezan" }, en: { b: "start" },

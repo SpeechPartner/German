@@ -38,6 +38,9 @@ if (typeof DICT_EXTRA !== "undefined") {
     if (DICT_EXTRA._adj && DICT_EXTRA._adj[l]) DICT_RAW[l] += "|" + DICT_EXTRA._adj[l];
     if (typeof DICT_WIKI !== "undefined" && DICT_WIKI[l]) DICT_RAW[l] += "|" + DICT_WIKI[l];
     if (typeof DICT_PDF !== "undefined" && DICT_PDF[l]) DICT_RAW[l] += "|" + DICT_PDF[l];
+  if (l === "en" && typeof DICT_PDF_ES_EN !== "undefined") DICT_RAW[l] += "|" + DICT_PDF_ES_EN;
+  if (l === "nl" && typeof NL_ES_PAIRS !== "undefined") DICT_RAW[l] += "|" + NL_ES_PAIRS;
+  if (l === "en" && typeof EN_ES_EXTRA !== "undefined") DICT_RAW[l] += "|" + EN_ES_EXTRA;
   });
 }
 var DICTS = {}, PHRASES_BY_LANG = {}, REVS = {};
@@ -54,7 +57,7 @@ var DICTS = {}, PHRASES_BY_LANG = {}, REVS = {};
   REVS[l] = {};
   Object.keys(DICTS[l]).forEach(function (src) {
     var es = DICTS[l][src];
-    if (REVS[l][es] === undefined && es.indexOf(" ") < 0) REVS[l][es] = src;
+    if (REVS[l][es] === undefined) REVS[l][es] = src;
   });
   // Vrouwelijke en meervoudsvormen van bijvoeglijke naamwoorden: elke Spaanse vorm krijgt zijn eigen woord
   if (typeof DICT_EXTRA !== "undefined" && DICT_EXTRA._adjRev && DICT_EXTRA._adjRev[l]) {
@@ -194,5 +197,15 @@ if (typeof DICT_PDF_FIX_EN !== "undefined") {
       DICTS[l][k] = v;
       if (REVS[l] && REVS[l][v] === undefined) REVS[l][v] = k;
     });
+  });
+})();
+// Gaten vullen via het Engels: Nederlands -> Engels -> Spaans, alleen als er nog geen Spaans woord staat
+(function () {
+  if (typeof NL_EN_EXTRA === "undefined" || !DICTS.nl || !DICTS.en) return;
+  var all = (typeof NL_EN_PAIRS !== "undefined" ? NL_EN_PAIRS + "|" : "") + NL_EN_EXTRA;
+  all.split("|").forEach(function (p) {
+    var i = p.indexOf("="); if (i < 1) return;
+    var nl = p.slice(0, i), en = p.slice(i + 1), es = DICTS.en[en];
+    if (es !== undefined && DICTS.nl[nl] === undefined) { DICTS.nl[nl] = es; if (REVS.nl[es] === undefined) REVS.nl[es] = nl; }
   });
 })();

@@ -1,6 +1,6 @@
 // Service worker: maakt de app offline bruikbaar.
 // BELANGRIJK: verhoog CACHE_VERSION bij elke nieuwe versie, anders blijft de oude versie op het toestel.
-const CACHE_VERSION = "speechpartner-de-v1.1";
+const CACHE_VERSION = "speechpartner-de-v2.0";
 const ASSETS = [
   "./",
   "./index.html",
@@ -11,7 +11,14 @@ const ASSETS = [
   "./js/doeltaal.js",
   "./js/i18n-es.js",
   "./js/i18n.js",
+  "./js/regels-doel.js",
+  "./js/grammatica-doel.js",
   "./js/omzet.js",
+  "./js/nl-direct-pairs.js",
+  "./js/extra-pairs.js",
+  "./js/nl-en-pairs.js",
+  "./js/de-en-pairs.js",
+  "./js/fr-en-pairs.js",
   "./js/woordenboek-doel.js",
   "./js/content.js",
   "./js/dict-wiki.js",

@@ -46,9 +46,17 @@
     if (list.length) a2[t] = (a2[t] || []).concat(list);
   });
   Object.keys(ALT).forEach(function (k) { delete ALT[k]; }); Object.keys(a2).forEach(function (k) { ALT[k] = a2[k]; });
+  // Zin bouwen werkt met de Spaanse stammen; die worden eerst bewaard en daarna met de zin vertaald
+  globalThis.BOUW_SRC = { stems: {}, cats: BUILDABLE_CATS.slice() };
+  Object.keys(BUILD_STEMS).forEach(function (k) { globalThis.BOUW_SRC.stems[k] = BUILD_STEMS[k]; });
   // Alleen voor het Spaans geschreven: leegmaken
   [GLOSS, ALT_NOTE, BUILD_STEMS, VERB_HINT].forEach(function (o) { Object.keys(o).forEach(function (k) { delete o[k]; }); });
-  [PATTERNS, GRAMMAR, RULES, BUILDABLE_CATS].forEach(function (a) { a.length = 0; });
+  [PATTERNS, GRAMMAR, BUILDABLE_CATS].forEach(function (a) { a.length = 0; });
+  // Regels per doeltaal (zelfde opbouw als de Spaanse regels)
+  RULES.length = 0;
+  (typeof REGELS_DOEL !== "undefined" && REGELS_DOEL[T] || []).forEach(function (r) { RULES.push(r); });
+  // Grammatica per doeltaal (tabblad Grammatica), zelfde opbouw als de Spaanse GRAMMAR
+  (typeof GRAMMAR_DOEL !== "undefined" && GRAMMAR_DOEL[T] || []).forEach(function (g) { GRAMMAR.push(g); });
   // Uitleg (Help): onderdelen over Zin bouwen, Regels en grammatica vervallen
   for (var hi = HELP_GUIDE.length - 1; hi >= 0; hi--) {
     if (D.vervalt(HELP_GUIDE[hi].t)) { HELP_GUIDE.splice(hi, 1); continue; }

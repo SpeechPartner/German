@@ -16,7 +16,7 @@
     ["zinnen", "Zinnen"], ["onderwerpen", "Onderwerpen"], ["vastlopen", "Vastlopen"],
     ["bouwen", "Zin bouwen"], ["reageren", "Reageren"], ["leren", "Leren"],
     ["regels", "Regels"], ["gesprek", "Gesprek"], ["uitspraak", "Uitspraak"], ["info", "Info"]
-  ].filter(function (t) { return IS_ES || (t[0] !== "bouwen" && t[0] !== "regels"); });
+  ];
   var PFX = IS_ES ? "gg_" : "sp" + DOELC + "_";
 
   // ---------- Opslag op het toestel ----------
@@ -309,7 +309,7 @@
   var TAB_ORDER = TABS.map(function (t) { return t[0]; });
   // Zinnen en Gesprek staan niet in de veeg-volgorde: die bereik je met een tik
   // Veeg-volgorde: Zinnen vooraan, Gesprek achteraan. Vastlopen en Info doen niet mee.
-  var SWIPE_TABS = ["zinnen", "onderwerpen", "bouwen", "reageren", "leren", "regels", "uitspraak", "gesprek"].filter(function (t) { return IS_ES || (t !== "bouwen" && t !== "regels"); });
+  var SWIPE_TABS = ["zinnen", "onderwerpen", "bouwen", "reageren", "leren", "regels", "uitspraak", "gesprek"];
   function tabIdx(t) { return TAB_ORDER.indexOf(t); }
   // Pagina wisselen: de knoppen onderaan verdwijnen en de nieuwe pagina verschijnt zacht.
   // Geen omslag-animatie meer.
@@ -439,15 +439,17 @@
       row.appendChild(btn(T(cat), S.cat === cat ? "primary small" : "small", function () { S.cat = cat; render(); }));
     });
     w.appendChild(row);
-    var canBuild = BUILDABLE_CATS.indexOf(S.cat) >= 0;
+    var canBuild = (IS_ES ? BUILDABLE_CATS : globalThis.BOUW_SRC.cats).indexOf(S.cat) >= 0;
     var shown = 0;
     if (S.cat === "Gesprek openen") { w.appendChild(openersCard()); shown++; }
     PHRASES[S.cat].forEach(function (it) {
       var extra = null;
-      if (canBuild && BUILD_STEMS[it.es]) {
+      var srcEs = it.bron !== undefined ? it.bron : it.es;
+      var stemsOf = IS_ES ? BUILD_STEMS : globalThis.BOUW_SRC.stems;
+      if (canBuild && stemsOf[srcEs]) {
         extra = el("div", "row");
         extra.appendChild(btn(T("Bouw verder →"), "primary small", function () {
-          S.build = { start: it.es, startM: it.m, conn: null, subj: null, verb: null, neg: BUILD_STEMS[it.es].neg };
+          S.build = { start: srcEs, startM: it.m, conn: null, subj: null, verb: null, neg: stemsOf[srcEs].neg };
           render();
         }));
       }
@@ -491,12 +493,79 @@
   }
 
   // ---------- Zin bouwen (vervolgmenu) ----------
+  // Een Spaanse bouwzin in de doeltaal. Lukt de vertaling niet grammaticaal, dan null: dan toont de app alleen de woorden.
+  // Vaste fouten van de zinsgenerator die we niet willen zien (per combinatie gecontroleerd)
+  var BOUW_FIX = {
+    fr: [
+      [/\bbeaucoup du\b/g, "beaucoup de"],
+      [/\bque (elle|il|ils|elles|on)\b/g, function (m0, w) { return "qu'" + w; }],
+      [/\b(travaille|travailles|travaillons|travaillez|travaillent) à la ville\b/g, function (m0, v) { return v + " en ville"; }],
+      [/\b(je|tu|il|elle|nous|vous|ils|elles) (fais|fait|faisons|faites|font) le dîner\b/gi, function (m0, pr) { return pr + " " + { je: "prépare", tu: "prépares", il: "prépare", elle: "prépare", nous: "préparons", vous: "préparez", ils: "préparent", elles: "préparent" }[pr.toLowerCase()] + " le dîner"; }]
+    ],
+    en: [[/\b(have|has) work a lot\b/g, "$1 a lot of work"], [/\b(do|does) the dinner\b/g, function (m0, v) { return (v === "does" ? "makes" : "make") + " dinner"; }], [/\b(do|does) sport\b/g, "$1 sports"]]
+  };
+  function bouwTx(es) {
+    if (IS_ES) return es;
+    if (typeof ZIN === "undefined") return null;
+    var r;
+    try { r = ZIN.translate(es, "es", DOELC, "m") || null; } catch (e) { return null; }
+    if (r && BOUW_FIX[DOELC]) BOUW_FIX[DOELC].forEach(function (f) { r = r.replace(f[0], f[1]); });
+    return r;
+  }
+  // Startstam in de doeltaal, alleen als er daarna een bijzin met "that" (Engels) of "que" (Frans) volgt.
+  // Duits (werkwoord aan het eind na "dass") en Nederlands doen we niet: dan zie je alleen de woorden.
+  function bouwStamTx(st) {
+    if (IS_ES) return st.stem;
+    var s = st.stemM && st.stemM[DOELC];
+    if (typeof s !== "string") return null;
+    if (DOELC === "en" && /that$/.test(s)) return s;
+    if (DOELC === "fr" && /que$/.test(s)) return s;
+    if (DOELC === "de" && /dass$/.test(s)) return s;
+    if (DOELC === "nl" && /dat$/.test(s)) return s;
+    return null;
+  }
+  // Bijzin met het werkwoord aan het eind (Duits: dass ..., Nederlands: dat ...).
+  // We vertalen eerst de hoofdzin en zetten het werkwoord daarna achteraan. Alleen eenvoudige zinnen:
+  // onderwerp (één woord) + werkwoord + rest, zonder hulp- of modale werkwoorden.
+  var SUB_SUBJ = { de: ["ich", "du", "er", "sie", "es", "wir", "ihr"], nl: ["ik", "jij", "je", "hij", "zij", "wij", "we", "het"] };
+  var SUB_AUX = { de: ["habe", "hast", "hat", "haben", "habt", "bin", "bist", "ist", "sind", "seid", "werde", "wirst", "wird", "werden", "werdet", "kann", "kannst", "können", "könnt", "muss", "musst", "müssen", "müsst", "soll", "sollst", "sollen", "will", "willst", "wollen", "möchte", "möchtest", "möchten", "darf", "dürfen", "sein", "haben"],
+                  nl: ["ben", "bent", "is", "zijn", "heb", "hebt", "heeft", "hebben", "word", "wordt", "worden", "kan", "kun", "kunt", "moet", "moeten", "wil", "wilt", "willen", "mag", "mogen", "zal", "zullen"] };
+  function bouwSubTx(clauseEs) {
+    if (!SUB_SUBJ[DOELC]) return null;
+    // Ontkenning: de vertaler kent Spaans "no" niet, dus we halen het weg en zetten "niet"/"geen" zelf
+    var neg = /\bno\b/.test(clauseEs);
+    if (neg) clauseEs = clauseEs.replace(/\bno\b\s*/, "");
+    var main = null;
+    if (DOELC === "de") main = bouwTx(clauseEs);
+    else if (typeof ES_NL !== "undefined" && typeof window !== "undefined" && window.REVS && window.REVS.nl) {
+      // REVS in deze scope is het doelwoordenboek; de globale Spaans-naar-Nederlands-tabel staat op window.REVS
+      try { main = ES_NL.translate(clauseEs, window.REVS.nl, function (w) { return (typeof GRAM !== "undefined") ? GRAM.gen(w, "nl") : null; }) || null; } catch (e) { main = null; }
+    }
+    if (!main) return null;
+    // Vaste woordgroepen die de woord-voor-woord-vertaler verkeerd doet (desde casa, en casa, tarde)
+    main = main.replace(/\bsinds huis\b/g, "vanuit huis").replace(/\bin huis\b/g, "thuis").replace(/\b(eet|eten) middag\b/g, function (m0, v) { return v + " laat"; });
+    var t = main.replace(/[.!?]+$/, "").split(/\s+/);
+    if (t.length < 3) return null;
+    var s = t[0].toLowerCase(), v = t[1].toLowerCase();
+    if (SUB_SUBJ[DOELC].indexOf(s) < 0) return null;
+    for (var i = 1; i < t.length; i++) if (SUB_AUX[DOELC].indexOf(t[i].toLowerCase()) >= 0) return null;
+    var rest = t.slice(2).join(" ");
+    if (neg) {
+      // "een X" wordt "geen X"; losse zelfstandige naamwoorden (brood, fruit, sport, koffie) ook; de rest krijgt "niet"
+      if (/^een /.test(rest)) rest = "geen " + rest.slice(4);
+      else if (/^(brood|fruit|sport|koffie|vrije tijd)\b/.test(rest)) rest = "geen " + rest;
+      else rest = "niet" + (rest ? " " + rest : "");
+    }
+    return (s + " " + (rest ? rest + " " : "") + v + ".").replace(/\s+/g, " ");
+  }
   function viewBuilder() {
     var b = S.build;
-    var st = BUILD_STEMS[b.start];
+    var stemsOf = IS_ES ? BUILD_STEMS : globalThis.BOUW_SRC.stems;
+    var st = stemsOf[b.start];
     var w = el("div");
     var head = el("div", "card big");
-    head.appendChild(el("div", "big-es", st.stem + " …"));
+    var stamTx = bouwStamTx(st);
+    if (IS_ES || stamTx) head.appendChild(el("div", "big-es", (IS_ES ? st.stem : stamTx) + " …"));
     head.appendChild(el("div", "nl", L(st.stemM) + " …"));
     w.appendChild(head);
 
@@ -535,10 +604,12 @@
     VERBS.forEach(function (v) { if (v.id === b.verb) verb = v; });
 
     w.appendChild(el("h2", "", T("4. Kies het afmaakdeel")));
-    var hint = el("div", "card");
-    hint.appendChild(el("div", "nl", L(VERB_HINT[verb.id])));
-    hint.appendChild(understoodCheckbox("verb:" + verb.id));
-    w.appendChild(hint);
+    if (VERB_HINT[verb.id]) {   // de uitleg bij het werkwoord bestaat alleen voor het Spaans
+      var hint = el("div", "card");
+      hint.appendChild(el("div", "nl", L(VERB_HINT[verb.id])));
+      hint.appendChild(understoodCheckbox("verb:" + verb.id));
+      w.appendChild(hint);
+    }
 
     verb.comps.forEach(function (comp) {
       // Zonder verbindingswoord: stam + zin (Creo que yo voy al cine).
@@ -546,7 +617,7 @@
       var clause = [subj.es];
       if (b.neg) clause.push("no");
       clause.push(verb.forms[subj.i]);
-      clause.push(comp.es);
+      clause.push(comp.bron !== undefined ? comp.bron : comp.es);  // de Spaanse bron, ook buiten het Spaans
       var NEG_M = { nl: "niet", en: "not", de: "nicht", fr: "ne … pas" };
       var gloss = L(subj.m) + (b.neg ? " · " + L(NEG_M) : "") + " · " + L(verb.m) + " · " + L(comp.m);
       var es, nlParts;
@@ -562,10 +633,22 @@
       var card = el("div", "card");
       var line = el("div", "line-row");
       var tx = el("div", "txt");
-      tx.appendChild(el("div", "es", es));
+      var tg = null;
+      if (IS_ES) tg = es;
+      else if (b.conn === null && bouwStamTx(st)) {
+        // Alleen de bijzin wordt vertaald; de startstam staat al in de doeltaal
+        var subord = DOELC === "de" || DOELC === "nl";
+        var cl = subord ? bouwSubTx(clause.join(" ") + ".") : bouwTx(clause.join(" ") + ".");
+        // Na "that"/"que" begint de bijzin met een kleine letter, behalve bij "I" en eigennamen
+        if (cl && (DOELC === "fr" || (DOELC === "en" && /^(You|He|She|We|They)\b/.test(cl)))) cl = cl.charAt(0).toLowerCase() + cl.slice(1);
+        if (cl) tg = bouwStamTx(st) + " " + cl;
+        // Franse elisie na "que": que elle -> qu'elle (ook buiten de vertaalde bijzin)
+        if (tg && DOELC === "fr") tg = tg.replace(/\bque (elle|il|ils|elles|on)\b/g, function (m0, w) { return "qu'" + w; });
+      }
+      if (tg) tx.appendChild(el("div", "es", tg));
       tx.appendChild(el("div", "nl", nlParts));
       line.appendChild(tx);
-      line.appendChild(speakBtn(es));
+      if (tg) line.appendChild(speakBtn(tg));
       card.appendChild(line);
       w.appendChild(card);
     });
@@ -575,6 +658,26 @@
   // ---------- Zin bouwen: patronen en analyse ----------
   function viewBouwen() {
     var w = el("div");
+    if (!IS_ES) {
+      // Buiten het Spaans: de startzinnen waarmee je zelf een zin bouwt (de patronen en de analyse zijn Spaans)
+      w.appendChild(el("div", "note", T("Kies een startzin en bouw hem verder. Lukt de zin niet grammaticaal in deze taal, dan zie je alleen de woorden.")));
+      var any = 0;
+      globalThis.BOUW_SRC.cats.forEach(function (cat) {
+        (PHRASES[cat] || []).forEach(function (it) {
+          var src = it.bron !== undefined ? it.bron : it.es;
+          if (!globalThis.BOUW_SRC.stems[src] || isUnderstood(it.es)) return;
+          var row = el("div", "row");
+          row.appendChild(btn(T("Bouw verder →"), "primary small", function () {
+            S.build = { start: src, startM: it.m, conn: null, subj: null, verb: null, neg: globalThis.BOUW_SRC.stems[src].neg };
+            S.tab = "bouwen"; render();
+          }));
+          var c = phraseCard(it, row);
+          if (c) { w.appendChild(c); any++; }
+        });
+      });
+      if (!any) w.appendChild(el("div", "note", T("Alles in deze groep is begrepen. Zet de begrepen items terug in de instellingen.")));
+      return w;
+    }
     w.appendChild(el("h2", "", T("Patronen")));
     w.appendChild(el("div", "note", T("Vul het patroon in met woorden die je al kent, en lees je zin hardop voor.")));
     PATTERNS.forEach(function (pt) {
@@ -1014,7 +1117,8 @@
   function viewLeren() {
     var w = el("div");
     var row = el("div", "chips");
-    [["kaarten", "Kaarten"], ["quiz", "Quiz"], ["grammatica", "Grammatica"]].filter(function (k) { return IS_ES || k[0] !== "grammatica"; }).forEach(function (k) {
+    var MET_GRAMMATICA = IS_ES || GRAMMAR.length > 0;
+    [["kaarten", "Kaarten"], ["quiz", "Quiz"], ["grammatica", "Grammatica"]].filter(function (k) { return MET_GRAMMATICA || k[0] !== "grammatica"; }).forEach(function (k) {
       row.appendChild(btn(T(k[1]), S.lMode === k[0] ? "primary small" : "small", function () {
         S.lMode = k[0]; S.lShow = false; render();
       }));
@@ -1022,7 +1126,7 @@
     w.appendChild(row);
     if (S.lMode === "kaarten") w.appendChild(viewKaarten());
     else if (S.lMode === "quiz") w.appendChild(viewQuiz());
-    else if (IS_ES) w.appendChild(viewGrammatica());
+    else if (MET_GRAMMATICA) w.appendChild(viewGrammatica());
     else { S.lMode = "kaarten"; w.appendChild(viewKaarten()); }
     return w;
   }
@@ -1277,6 +1381,17 @@
     // Grammatica-motor (NL, EN, DE, FR): eerst de zin ontleden en opbouwen.
     // Lukt dat niet, dan valt de app terug op woord-voor-woord.
     // Nederlands: de zinsmodule (es-nl.js). Lukt die niet, dan alleen de woorden, geen ongrammaticale zin.
+    // Nederlands als doeltaal: eerst de Spaanse zin (nl-es.js), daarna vertalen naar de gekozen taal via het Spaans.
+    if (!IS_ES && DOELC === "nl" && typeof NL_ES !== "undefined" && typeof DICTS !== "undefined" && DICTS.nl) {
+      var nlEs = null;
+      try { nlEs = NL_ES.translate(text, DICTS.nl, store.get("eigenGeslacht", "m") === "f" ? "f" : "m"); } catch (e) { nlEs = null; }
+      if (nlEs) {
+        if (lang === "es") return { text: nlEs, grammar: true, parts: [], missing: [] };
+        var nlPiv = null;
+        try { nlPiv = ZIN.translate(nlEs, "es", lang, "m"); } catch (e) { nlPiv = null; }
+        if (nlPiv) return { text: nlPiv, grammar: true, parts: [], missing: [] };
+      }
+    }
     if (!IS_ES && typeof ZIN !== "undefined") {
       var zft = null;
       try { zft = ZIN.translate(text, DOELC, lang, "m"); } catch (e) { zft = null; }
@@ -1478,7 +1593,43 @@
     herhaal: { nl: "Kun je dat herhalen, alsjeblieft?", en: "Can you repeat that, please?", de: "Kannst du das bitte wiederholen?", fr: "Tu peux répéter, s'il te plaît ?", es: "¿Puedes repetirlo, por favor?" },
     bedoel: { nl: "Wat bedoel je?", en: "What do you mean?", de: "Was meinst du?", fr: "Qu'est-ce que tu veux dire ?", es: "¿Qué quieres decir?" }
   };
+  // Foutmarge voor spraak en typefouten: een woord dat niet in de woordenlijst van de doeltaal staat,
+  // wordt vervangen door het dichtstbijzijnde bekende woord (1 letter fout bij 4+ letters, 2 bij 8+ letters).
+  // Woorden die wel bekend zijn, blijven ongewijzigd, dus "twaalf" wordt nooit "twee".
+  var HEARD_VOCAB = {};
+  function heardVocab(lang) {
+    if (!HEARD_VOCAB[lang]) {
+      var src = REVS[lang] || {};   // sleutels = woorden in de taal van de gesprekspartner
+      var byLen = {};
+      Object.keys(src).forEach(function (w) {
+        var n = norm(w).toLowerCase();
+        if (n.indexOf(" ") >= 0 || n.length < 4) return;
+        (byLen[n.length] = byLen[n.length] || []).push(n);
+      });
+      HEARD_VOCAB[lang] = { known: Object.create(null), byLen: byLen };
+      Object.keys(byLen).forEach(function (k) { byLen[k].forEach(function (n) { HEARD_VOCAB[lang].known[n] = 1; }); });
+    }
+    return HEARD_VOCAB[lang];
+  }
+  function heardFix(text) {
+    var v = heardVocab(lang), out = [];
+    String(text).split(/(\s+|[.,;:!?¿¡])/).forEach(function (tok) {
+      var n = norm(tok).toLowerCase();
+      if (!n || /^\s+$|^[.,;:!?¿¡]$/.test(tok) || n.length < 4 || v.known[n]) { out.push(tok); return; }
+      var thr = n.length >= 8 ? 2 : 1, best = null, bestD = thr + 1, ties = 0;
+      for (var L = n.length - thr; L <= n.length + thr; L++) {
+        (v.byLen[L] || []).forEach(function (c) {
+          var d = lev(n, c);
+          if (d < bestD) { bestD = d; best = c; ties = 1; }
+          else if (d === bestD && c !== best) ties++;
+        });
+      }
+      out.push(best !== null && ties === 1 ? best : tok);
+    });
+    return out.join("");
+  }
   function makeTurn(text) {
+    text = heardFix(text);
     var n = norm(text);
     var genDetected = detectPartnerGender(text);
     if (genDetected) store.set("partnerGenderAuto", genDetected);
@@ -1626,7 +1777,7 @@
   var WH_MODELS = { tiny: "onnx-community/whisper-tiny", base: "onnx-community/whisper-base" };
 
   // Diagnose: elke stap van de spraakroute wordt genoteerd, zodat een fout precies aan te wijzen is.
-  var APP_VERSION = "1.1";
+  var APP_VERSION = "2.0";
   // Versies waarvoor gebruikers de app opnieuw op hun beginscherm moeten zetten (oude icoon weg, nieuwe erop).
   // Bij zo'n update verschijnt eenmalig een melding met uitleg.
   var REINSTALL_VERSIONS = [];
