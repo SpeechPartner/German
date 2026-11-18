@@ -69,5 +69,10 @@ var DOELDICT = (function () {
       if (D.en[en] === undefined) D.en[en] = nl;
     });
   }
+  // "laat" (te laat) werd via het Spaans "tarde" en daarmee "afternoon": hier de eigen betekenis (niet "laten")
+  var LAAT = { en: "late", de: "spät", fr: "tard" }[T];
+  if (LAAT && D.nl) D.nl.laat = LAAT;
+  var HOELAAT = { en: "what time", de: "um wie viel Uhr", fr: "à quelle heure" }[T];
+  if (HOELAAT && P.nl) P.nl["hoe laat"] = HOELAAT;
   return { D: D, R: R, P: P };
 })();
