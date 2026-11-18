@@ -9,7 +9,7 @@ var ACHTERGROND = (function () {
   // aangevuld met de overige themakleuren.
   var PAL = {
     "standaard-nl": ["#111111", "#21468B", "#7d121c", "#AE1C28", "#2f5fb3", "#D62B3A", "#e35a66", "#6f8fd0", "#f08a94", "#dfe8fb", "#fde3e6"],
-    "standaard-en": ["#111111", "#012169", "#8a0b20", "#C8102E", "#2b4a9e", "#e03a52", "#5a76c2", "#ee7a8b", "#9fb3e4", "#dfe6f7", "#f9dde1"],
+    "standaard-en": ["#111111", "#ffffff", "#012169", "#8a0b20", "#C8102E", "#2b4a9e", "#e03a52", "#5a76c2", "#ee7a8b", "#9fb3e4", "#dfe6f7", "#f9dde1"],
     "standaard-de": ["#000000", "#2b2b2b", "#7a0000", "#a30000", "#DD0000", "#ff3b1f", "#ff7a3c", "#e0a800", "#FFCE00", "#ffe066", "#fff4cc"],
     "standaard-fr": ["#111111", "#002395", "#8f0f1a", "#b5111f", "#2d4fc4", "#ED2939", "#f25563", "#6d86dc", "#f5939c", "#dfe5f7", "#fbdde0"],
     "standaard-es": ["#3d0709", "#7a0f14", "#8f1218", "#AA151B", "#c93a2a", "#d9642a", "#e08f1a", "#F1BF00", "#f6d24d", "#fde9a6", "#fff3cc"],
