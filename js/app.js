@@ -592,7 +592,7 @@
     }
     if (!main && DOELC === "nl") {
       var NS = { yo: "ik", "tú": "jij", "él": "hij", ella: "zij", nosotros: "wij", ellos: "zij" };
-      var NV = { yo: ["doe", "wil"], "tú": ["doe", "wil"], "él": ["doet", "wil"], ella: ["doet", "wil"], nosotros: ["doen", "willen"], ellos: ["doen", "willen"] };
+      var NV = { yo: ["doe", "wil"], "tú": ["doet", "wilt"], "él": ["doet", "wil"], ella: ["doet", "wil"], nosotros: ["doen", "willen"], ellos: ["doen", "willen"] };
       var mm = /^(yo|tú|él|ella|nosotros|ellos) (?:hago|haces|hace|hacemos|hacen) la compra$/i.exec(clauseEs.trim().replace(/[.!?]+$/, ""));
       if (mm) main = NS[mm[1].toLowerCase()] + " " + NV[mm[1].toLowerCase()][0] + " boodschappen";
       mm = /^(yo|tú|él|ella|nosotros|ellos) (?:quiero|quieres|quiere|queremos|quieren) aprender más (?:español|holandés|neerlandés)$/i.exec(clauseEs.trim().replace(/[.!?]+$/, ""));
@@ -605,6 +605,11 @@
     main = main.replace(/\btijd vrij\b/g, "vrije tijd").replace(/\b(doe|doet|doen) (de )?boodschappen\b/g, function (m0, v) { return v + " boodschappen"; });
     var gz = DOELC === "de" && /^(mir|dir|ihm|ihr|uns|ihnen) geht es (gut|nicht gut)\.?$/i.exec(main);
     if (gz) return { s: "es", v: "geht", rest: (neg ? gz[1].toLowerCase() + " nicht gut" : gz[1].toLowerCase() + " gut"), aux: false };
+    var nz = DOELC === "nl" && /^(yo|tú|él|ella|nosotros|ellos) (?:estoy|estás|está|estamos|están) bien$/i.exec(clauseEs.trim().replace(/[.!?]+$/, ""));
+    if (nz) {   // "estar bien" = het gaat goed met ...  (niet: "hij is goed")
+      var OBJ = { yo: "mij", "tú": "jou", "él": "hem", ella: "haar", nosotros: "ons", ellos: "hen" };
+      return { s: "het", v: "gaat", rest: (neg ? "niet " : "") + "goed met " + OBJ[nz[1].toLowerCase()], aux: false };
+    }
     var t = main.replace(/[.!?]+$/, "").split(/\s+/);
     if (t.length < 3) return null;
     var s = t[0].toLowerCase(), v = t[1].toLowerCase();
@@ -633,7 +638,7 @@
     var q = bouwSubParts(clauseEs);
     if (!q || q.aux) return null;
     // Nederlands: modaal werkwoord staat in de bijzin vóór de infinitief ("omdat ik koffie wil drinken")
-    if (DOELC === "nl" && /^(wil|wilt|willen|kan|kunt|kun|kunnen|moet|moeten|mag|mogen)$/.test(q.v) && q.rest) {
+    if (DOELC === "nl" && /^(wil|wilt|willen|kan|kunt|kun|kunnen|moet|moeten|mag|mogen)$/.test(q.v) && q.rest && !/^(een|de|het|geen) /.test(q.rest)) {
       var rt = q.rest.split(" "), last = rt.pop();
       return (q.s + " " + (rt.length ? rt.join(" ") + " " : "") + q.v + " " + last + ".").replace(/\s+/g, " ");
     }
@@ -671,12 +676,41 @@
       cl = cl.replace(/[.!?]+$/, "");
     }
     var out = start + ", " + ct + " " + cl + ".";
-    if (DOELC === "fr" && b.conn === 4) out = out.replace(/(bien que )((?:je|tu|il|elle|ils|elles|on|nous|vous) (?:ne )?|j'|(?:il|elle|ils|elles|on) n')?(\S+)/, function (m0, c, pre, v) {
+    if (DOELC === "fr" && b.conn === 4) out = out.replace(/(bien que )(j'|(?:je|tu|il|elle|ils|elles|on|nous|vous) )?(ne |n')?(\S+)/, function (m0, c, pre, neg, v) {
       var SJ = { fais: "fasse", fait: "fasse", font: "fassent", faisons: "fassions", ai: "aie", a: "ait", as: "aies", avons: "ayons", ont: "aient", vais: "aille", vas: "ailles", va: "aille", allons: "allions", vont: "aillent", suis: "sois", es: "sois", est: "soit", sommes: "soyons", sont: "soient", veux: "veuille", veut: "veuille", voulons: "voulions", veulent: "veuillent", prépare: "prépare", mange: "mange", travaille: "travaille", travaillons: "travaillions", mangeons: "mangions" };
-      return c + (pre || "") + (SJ[v] || v);
+      if (pre && /^tu/.test(pre)) { SJ.fais = "fasses"; SJ.fait = "fasse"; SJ.veux = "veuilles"; }
+      var sj = SJ[v] || v, vow = /^[aeéiouhâ]/i.test(sj);
+      if (pre === "je " && !neg && vow) pre = "j'";                       // j'aille, j'aie
+      if (!pre && neg) return m0;
+      return c + (pre || "") + (neg ? (vow ? "n'" : "ne ") : "") + sj;
     }).replace(/bien que (il|elle|ils|elles|on)\b/g, "bien qu'$1").replace(/bien qu'(il|elle|ils|elles|on) n'a\b/g, "bien qu'$1 n'ait");
     if (DOELC === "fr") out = out.replace(/\b(parce|bien) que (il|elle|ils|elles|on)\b/g, "$1 qu'$2");
+    if (DOELC === "fr") out = out.replace(/(, (?:parce que|bien que|mais|et|donc) )J'/g, "$1j'");
     return out;
+  }
+  // Vervoegd werkwoord in de gebruikerstaal (de uitleg tussen haakjes), passend bij het gekozen voornaamwoord
+  var GLOSS_VORM = {
+    en: { ir: ["go", "go", "goes", "go", "go"], tener: ["have", "have", "has", "have", "have"], querer: ["want", "want", "wants", "want", "want"], estar: ["am", "are", "is", "are", "are"],
+          trabajar: ["work", "work", "works", "work", "work"], hacer: ["do", "do", "does", "do", "do"], comer: ["eat", "eat", "eats", "eat", "eat"], ir_past: ["went", "went", "went", "went", "went"] },
+    de: { ir: ["gehe", "gehst", "geht", "gehen", "gehen"], tener: ["habe", "hast", "hat", "haben", "haben"], querer: ["will", "willst", "will", "wollen", "wollen"], estar: ["bin", "bist", "ist", "sind", "sind"],
+          trabajar: ["arbeite", "arbeitest", "arbeitet", "arbeiten", "arbeiten"], hacer: ["mache", "machst", "macht", "machen", "machen"], comer: ["esse", "isst", "isst", "essen", "essen"],
+          ir_past: ["bin gegangen", "bist gegangen", "ist gegangen", "sind gegangen", "sind gegangen"] },
+    fr: { ir: ["vais", "vas", "va", "allons", "vont"], tener: ["ai", "as", "a", "avons", "ont"], querer: ["veux", "veux", "veut", "voulons", "veulent"], estar: ["suis", "es", "est", "sommes", "sont"],
+          trabajar: ["travaille", "travailles", "travaille", "travaillons", "travaillent"], hacer: ["fais", "fais", "fait", "faisons", "font"], comer: ["mange", "manges", "mange", "mangeons", "mangent"],
+          ir_past: ["suis allé", "es allé", "est allé", "sommes allés", "sont allés"] },
+    nl: { ir: ["ga", "gaat", "gaat", "gaan", "gaan"], tener: ["heb", "hebt", "heeft", "hebben", "hebben"], querer: ["wil", "wilt", "wil", "willen", "willen"], estar: ["ben", "bent", "is", "zijn", "zijn"],
+          trabajar: ["werk", "werkt", "werkt", "werken", "werken"], hacer: ["doe", "doet", "doet", "doen", "doen"], comer: ["eet", "eet", "eet", "eten", "eten"], ir_past: ["ging", "ging", "ging", "gingen", "gingen"] }
+  };
+  function glossVorm(verb, subj) {
+    var g = GLOSS_VORM[lang], base = L(verb.m);
+    if (lang === "es" && !IS_ES && verb.forms && verb.forms[subj.i]) {   // Spaanse gebruikerstaal: het Spaanse vervoegde werkwoord zelf
+      return verb.forms[subj.i] + (verb.id === "estar" ? ", estado" : verb.id === "ir_past" ? ", pasado" : "");
+    }
+    if (!g || !g[verb.id]) return base;
+    var f = g[verb.id][subj.i];
+    if (lang === "fr" && verb.id === "ir_past" && subj.es === "ella") f += "e";
+    var pm = /\s*(\([^)]*\))\s*$/.exec(base);   // bijv. "(toestand)" blijft staan
+    return f + (pm ? ", " + pm[1].slice(1, -1) : "");   // "ben (toestand)" wordt "ben, toestand" (geen dubbele haakjes in de knop)
   }
   function viewBuilder() {
     var b = S.build;
@@ -716,7 +750,7 @@
     VERBS.forEach(function (v) {
       if (isUnderstood("verb:" + v.id)) return;
       var vf = IS_ES ? null : bouwVorm(v, SUBJ[b.subj]);
-      vr.appendChild(btn(vf ? vf + " (" + L(v.m) + ")" : L(v.m), b.verb === v.id ? "primary small" : "small", function () { b.verb = v.id; render(); }));
+      vr.appendChild(btn(vf ? vf + " (" + glossVorm(v, SUBJ[b.subj]) + ")" : L(v.m), b.verb === v.id ? "primary small" : "small", function () { b.verb = v.id; render(); }));
     });
     w.appendChild(vr);
     if (b.verb === null) return w;
@@ -740,8 +774,9 @@
       if (b.neg) clause.push("no");
       clause.push(verb.forms[subj.i]);
       clause.push(comp.bron !== undefined ? comp.bron : comp.es);  // de Spaanse bron, ook buiten het Spaans
-      var NEG_M = { nl: "niet", en: "not", de: "nicht", fr: "ne … pas" };
-      var gloss = L(subj.m) + (b.neg ? " · " + L(NEG_M) : "") + " · " + L(verb.m) + " · " + L(comp.m);
+      var NEG_M = { nl: "niet", en: "not", de: "nicht", fr: "ne … pas", es: "no" };
+      var gloss = L(subj.m) + (b.neg ? " · " + L(NEG_M) : "") + " · " + glossVorm(verb, subj) + " · " + L(comp.m);
+      if (lang === "fr") gloss = gloss.replace(/^je · (?=[aeéiouhàâ])/i, "j'").replace(/^Je · (?=[aeéiouhàâ])/, "J'");   // j'ai (elisie)
       var es, nlParts;
       if (b.conn !== null) {
         var base = b.start.replace(/[.…\s]+$/, "");
@@ -770,6 +805,7 @@
         if (tg && DOELC === "fr") tg = tg.replace(/\bque (elle|il|ils|elles|on)\b/g, function (m0, w) { return "qu'" + w; });
       }
       if (tg && DOELC === "fr") tg = tg.replace(/\bje ne prépares\b/g, "je ne prépare");
+      if (tg && DOELC === "fr") tg = tg.replace(/\bje (?=[aeéiouhàâêè])/g, "j'").replace(/\bJe (?=[aeéiouhàâêè])/g, "J'");   // je aille -> j'aille
       if (tg) tx.appendChild(el("div", "es", tg));
       tx.appendChild(el("div", "nl", nlParts));
       line.appendChild(tx);
@@ -1175,49 +1211,59 @@
     return w;
   }
 
+  function quizCtx() {
+    var isEs = (typeof IS_ES !== "undefined") ? IS_ES : true, tgt = isEs ? "es" : DOELC;
+    var forms = {}; VERBS.forEach(function (v) { forms[v.id] = v.forms; });
+    return { T: tgt, L: lang, SUBJ: SUBJ, VERBS: VERBS, esForms: forms,
+      comp: function (X, vid, ci) {
+        var v = null; VERBS.forEach(function (x) { if (x.id === vid) v = x; });
+        var c = v && v.comps[ci]; if (!c) return null;
+        if (X === tgt) return c.es;
+        if (X === "es") return c.bron !== undefined ? c.bron : c.es;
+        return c.m ? (c.m[X] || null) : null;
+      } };
+  }
+
+  // Quiz: drie zinnen in de taal die je leert. Eén goed, één met een grammaticafout, één met een andere betekenis.
   function viewQuiz() {
-    var deck = allItems();
     var w = el("div");
-    if (!S.quiz) {
-      var it = deck[Math.floor(Math.random() * deck.length)];
-      var others = shuffle(deck.filter(function (d) { return d.es !== it.es; })).slice(0, 2);
-      S.quiz = { it: it, opts: shuffle([it].concat(others)), answered: null };
-    }
-    var q = S.quiz;
+    if (!S.quiz || !S.quiz.q) { var nq = QUIZ.next(quizCtx()); S.quiz = nq ? { q: nq, answered: null } : null; }
+    if (!S.quiz) return w;
+    var q = S.quiz.q, A = S.quiz.answered, U = QUIZ.UI;
     w.appendChild(el("div", "stat", T("Score:") + " " + S.score[0] + " / " + S.score[1]));
     var big = el("div", "card big");
-    big.appendChild(el("div", "nl", T("Wat betekent dit?")));
-    big.appendChild(el("div", "big-es", q.it.es));
+    big.appendChild(el("div", "nl", QUIZ.tx(U.title, lang)));
+    big.appendChild(el("div", "nl", QUIZ.tx(U.meaning, lang)));
+    big.appendChild(el("div", "big-es", q.meaning));
     w.appendChild(big);
-    var r = el("div", "row");
-    r.appendChild(speakBtn(q.it.es));
-    w.appendChild(r);
-    var opts = el("div", "row quiz-opts");
-    q.opts.forEach(function (o) {
-      var isRight = o.es === q.it.es;
-      var b = btn(L(o.m), (q.answered && isRight) ? "primary" : "", function () {
-        if (q.answered) return;
-        q.answered = o.es;
-        S.score[1]++;
-        if (isRight) S.score[0]++;
+    var list = el("div", "quiz-list");
+    q.opts.forEach(function (o, idx) {
+      var cls = A === null ? "" : (o.role === "good" ? "primary" : "");
+      var b = btn(o.txt, cls, function () {
+        if (S.quiz.answered !== null) return;
+        S.quiz.answered = idx; S.score[1]++;
+        if (o.role === "good") S.score[0]++;
         render();
       });
-      b.disabled = !!q.answered;
-      opts.appendChild(b);
+      b.disabled = A !== null;
+      list.appendChild(b);
     });
-    w.appendChild(opts);
-    if (q.answered) {
+    w.appendChild(list);
+    if (A !== null) {
       var fb = el("div", "card");
-      if (q.answered === q.it.es) fb.appendChild(el("div", "ok", T("Goed!")));
-      else fb.appendChild(el("div", "bad", T("Niet helemaal. Het juiste antwoord is:") + " " + L(q.it.m)));
-      fb.appendChild(el("div", "nl", T("Onthoud:") + " " + q.it.es + " = " + L(q.it.m)));
-      if (q.answered !== q.it.es) {
-        // Bij een fout antwoord: wat de gekozen optie betekende, en de woord-voor-woord-vertaling van de juiste zin
-        var keuze = q.opts.filter(function (x) { return x.es === q.answered; })[0];
-        if (keuze) fb.appendChild(el("div", "nl", T("Jouw keuze betekende:") + " " + L(keuze.m)));
-        var qg = glossBlock(q.it.es);
-        if (qg) fb.appendChild(qg);
-      }
+      fb.appendChild(el(q.opts[A].role === "good" ? "div" : "div", q.opts[A].role === "good" ? "ok" : "bad", QUIZ.tx(q.opts[A].role === "good" ? U.ok : U.no, lang)));
+      q.opts.forEach(function (o, idx) {
+        var row = el("div", "quiz-expl");
+        var head = el("div", "line-row");
+        var tx = el("div", "txt");
+        tx.appendChild(el("div", "es", o.txt));
+        tx.appendChild(el("div", "nl", QUIZ.tx(o.role === "good" ? U.tagGood : (o.role === "gram" ? U.tagGram : U.tagMean), lang) + (idx === A ? "  ←" : "")));
+        if (o.role !== "good") tx.appendChild(el("div", "nl", QUIZ.explain(o.e, lang)));
+        head.appendChild(tx);
+        if (o.role === "good") head.appendChild(speakBtn(o.txt));
+        row.appendChild(head);
+        fb.appendChild(row);
+      });
       w.appendChild(fb);
       w.appendChild(btn(T("Volgende vraag →"), "primary", function () { S.quiz = null; render(); }));
     }
@@ -1918,7 +1964,7 @@
   var WH_MODELS = { tiny: "onnx-community/whisper-tiny", base: "onnx-community/whisper-base" };
 
   // Diagnose: elke stap van de spraakroute wordt genoteerd, zodat een fout precies aan te wijzen is.
-  var APP_VERSION = "2.32";
+  var APP_VERSION = "2.35";
   // Versies waarvoor gebruikers de app opnieuw op hun beginscherm moeten zetten (oude icoon weg, nieuwe erop).
   // Bij zo'n update verschijnt eenmalig een melding met uitleg.
   var REINSTALL_VERSIONS = [];
@@ -2349,7 +2395,7 @@
     { n: m("Leren", "Learn", "Lernen", "Apprendre"),
       w: m("Oefenen met kaarten, een quiz en grammatica.", "Practise with flashcards, a quiz and grammar.", "Üben mit Karteikarten, einem Quiz und Grammatik.", "S'entraîner avec des cartes, un quiz et la grammaire."),
       k: [m("Kaarten: markeer wat je al kent als 'gekend'.", "Flashcards: mark what you already know with 'Known'.", "Karten: markiere, was du schon kannst, mit 'Gekonnt'.", "Cartes : marque ce que tu connais déjà avec « Acquis »."),
-          m("Quiz: kies de juiste vertaling uit drie opties.", "Quiz: choose the right translation from three options.", "Quiz: wähle die richtige Übersetzung aus drei Optionen.", "Quiz : choisis la bonne traduction parmi trois options."),
+          m("Quiz: je krijgt de betekenis en kiest uit drie zinnen: één is goed, één bevat een grammaticafout en één betekent iets anders. Bij elk fout antwoord krijg je uitleg.", "Quiz: you see the meaning and choose from three sentences: one is correct, one contains a grammar mistake and one means something else. Every wrong answer comes with an explanation.", "Quiz: Du siehst die Bedeutung und wählst aus drei Sätzen: einer ist richtig, einer enthält einen Grammatikfehler und einer bedeutet etwas anderes. Zu jeder falschen Antwort gibt es eine Erklärung.", "Quiz : tu vois le sens et tu choisis parmi trois phrases : une est correcte, une contient une faute de grammaire et une veut dire autre chose. Chaque mauvaise réponse est expliquée."),
           m("Grammatica: korte regels met voorbeelden en het waarom.", "Grammar: short rules with examples and the reason.", "Grammatik: kurze Regeln mit Beispielen und dem Warum.", "Grammaire : courtes règles avec exemples et explication.")] },
     { n: m("Regels", "Rules", "Regeln", "Règles"),
       w: m("Grammatica in het kort, met voorbeelden en een korte test.", "Grammar in brief, with examples and a short test.", "Grammatik kurz gefasst, mit Beispielen und einem kurzen Test.", "La grammaire en bref, avec exemples et un court test."),
