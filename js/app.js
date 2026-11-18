@@ -819,29 +819,32 @@
   // ---------- Zin bouwen: patronen en analyse ----------
   function viewBouwen() {
     var w = el("div");
-    if (!IS_ES) {
-      // Buiten het Spaans: de startzinnen waarmee je zelf een zin bouwt (de patronen en de analyse zijn Spaans)
-      w.appendChild(el("div", "note", T("Kies een startzin en bouw hem verder. Lukt de zin niet grammaticaal in deze taal, dan zie je alleen de woorden.")));
-      var any = 0;
-      globalThis.BOUW_SRC.cats.forEach(function (cat) {
-        (PHRASES[cat] || []).forEach(function (it) {
-          var src = it.bron !== undefined ? it.bron : it.es;
-          if (!globalThis.BOUW_SRC.stems[src] || isUnderstood(it.es)) return;
-          var row = el("div", "row");
-          row.appendChild(btn(T("Bouw verder →"), "primary small", function () {
-            S.build = { start: src, startM: it.m, startTx: it.es, conn: null, subj: null, verb: null, neg: globalThis.BOUW_SRC.stems[src].neg };
-            S.tab = "bouwen"; render();
-          }));
-          var c = phraseCard(it, row);
-          if (c) { w.appendChild(c); any++; }
-        });
+    var stems = IS_ES ? BUILD_STEMS : globalThis.BOUW_SRC.stems, cats = IS_ES ? BUILDABLE_CATS : globalThis.BOUW_SRC.cats;
+    w.appendChild(el("div", "note", IS_ES ? T("Kies een startzin en bouw hem verder.") : T("Kies een startzin en bouw hem verder. Lukt de zin niet grammaticaal in deze taal, dan zie je alleen de woorden.")));
+    var any = 0;
+    cats.forEach(function (cat) {
+      (PHRASES[cat] || []).forEach(function (it) {
+        var src = it.bron !== undefined ? it.bron : it.es;
+        if (!stems[src] || isUnderstood(it.es)) return;
+        var row = el("div", "row");
+        row.appendChild(btn(T("Bouw verder →"), "primary small", function () {
+          S.build = { start: src, startM: it.m, startTx: it.es, conn: null, subj: null, verb: null, neg: stems[src].neg };
+          S.tab = "bouwen"; render();
+        }));
+        var c = phraseCard(it, row);
+        if (c) { w.appendChild(c); any++; }
       });
-      if (!any) w.appendChild(el("div", "note", T("Alles in deze groep is begrepen. Zet de begrepen items terug in de instellingen.")));
-      return w;
-    }
+    });
+    if (!any) w.appendChild(el("div", "note", T("Alles in deze groep is begrepen. Zet de begrepen items terug in de instellingen.")));
+    return w;
+  }
+
+  // ---------- Leren > Patronen: patroon invullen en je eigen zin ----------
+  function viewPatronen() {
+    var w = el("div");
     w.appendChild(el("h2", "", T("Patronen")));
     w.appendChild(el("div", "note", T("Vul het patroon in met woorden die je al kent, en lees je zin hardop voor.")));
-    PATTERNS.forEach(function (pt) {
+    (IS_ES ? PATTERNS : (globalThis.PATRONEN || [])).forEach(function (pt) {
       var c = el("div", "card");
       c.appendChild(el("div", "sec-title", L(pt.label)));
       var line = el("div", "line-row");
@@ -851,7 +854,7 @@
       line.appendChild(tx);
       line.appendChild(speakBtn(pt.ex.es));
       c.appendChild(line);
-      c.appendChild(explainBox(pt.ex.es, { noUnderstood: true }));
+      if (IS_ES) c.appendChild(explainBox(pt.ex.es, { noUnderstood: true }));
       w.appendChild(c);
     });
 
@@ -863,7 +866,7 @@
     var out = el("div");
     var row = el("div", "row");
     row.appendChild(btn("🔊 " + T("Luister"), "primary", function () { if (ta.value.trim()) speak(ta.value.trim()); }));
-    row.appendChild(btn(T("Analyseer mijn zin"), "primary", function () {
+    if (IS_ES) row.appendChild(btn(T("Analyseer mijn zin"), "primary", function () {
       out.innerHTML = "";
       out.appendChild(analyse(ta.value));
     }));
@@ -1296,7 +1299,7 @@
     var w = el("div");
     var row = el("div", "chips");
     var MET_GRAMMATICA = IS_ES || GRAMMAR.length > 0;
-    [["kaarten", "Kaarten"], ["quiz", "Quiz"], ["grammatica", "Grammatica"]].filter(function (k) { return MET_GRAMMATICA || k[0] !== "grammatica"; }).forEach(function (k) {
+    [["kaarten", "Kaarten"], ["quiz", "Quiz"], ["grammatica", "Grammatica"], ["patronen", "Patronen"]].filter(function (k) { return MET_GRAMMATICA || k[0] !== "grammatica"; }).forEach(function (k) {
       row.appendChild(btn(T(k[1]), S.lMode === k[0] ? "primary small" : "small", function () {
         S.lMode = k[0]; S.lShow = false; render();
       }));
@@ -1304,6 +1307,7 @@
     w.appendChild(row);
     if (S.lMode === "kaarten") w.appendChild(viewKaarten());
     else if (S.lMode === "quiz") w.appendChild(viewQuiz());
+    else if (S.lMode === "patronen") w.appendChild(viewPatronen());
     else if (MET_GRAMMATICA) w.appendChild(viewGrammatica());
     else { S.lMode = "kaarten"; w.appendChild(viewKaarten()); }
     return w;
@@ -1964,7 +1968,7 @@
   var WH_MODELS = { tiny: "onnx-community/whisper-tiny", base: "onnx-community/whisper-base" };
 
   // Diagnose: elke stap van de spraakroute wordt genoteerd, zodat een fout precies aan te wijzen is.
-  var APP_VERSION = "2.36";
+  var APP_VERSION = "2.37";
   // Versies waarvoor gebruikers de app opnieuw op hun beginscherm moeten zetten (oude icoon weg, nieuwe erop).
   // Bij zo'n update verschijnt eenmalig een melding met uitleg.
   var REINSTALL_VERSIONS = [];
@@ -2384,19 +2388,20 @@
           m("'Andere zin' laat een nieuwe zin zien.", "'Another phrase' shows a new one.", "'Anderer Satz' zeigt einen neuen.", "« Autre phrase » en affiche une nouvelle."),
           m("Onderaan staat de volledige lijst.", "The full list is at the bottom.", "Unten steht die vollständige Liste.", "La liste complète est en bas.")] },
     { n: m("Zin bouwen", "Build a sentence", "Satz bauen", "Construire une phrase"),
-      w: m("Maak zelf zinnen met een patroon uit woorden die je al kent.", "Make your own sentences with a pattern from words you already know.", "Baue eigene Sätze mit einem Muster aus Wörtern, die du schon kennst.", "Fais tes propres phrases avec un modèle à partir de mots que tu connais déjà."),
-      k: [m("Kies een patroon en vul het in.", "Choose a pattern and fill it in.", "Wähle ein Muster und fülle es aus.", "Choisis un modèle et complète-le."),
-          m("Lees je zin hardop voor.", "Read your sentence aloud.", "Lies deinen Satz laut vor.", "Lis ta phrase à voix haute.")] },
+      w: m("Bouw zelf zinnen vanuit een startzin, met het juiste werkwoord bij de gekozen persoon.", "Build your own sentences from a starter sentence, with the right verb form for the person you choose.", "Baue eigene Sätze aus einem Startsatz, mit der richtigen Verbform für die gewählte Person.", "Construis tes propres phrases à partir d'une phrase de départ, avec la bonne forme du verbe pour la personne choisie."),
+      k: [m("Kies een startzin en tik op 'Bouw verder →'.", "Choose a starter sentence and tap 'Continue →'.", "Wähle einen Startsatz und tippe auf 'Weiter →'.", "Choisis une phrase de départ et touche « Continuer → »."),
+          m("Kies een verbindingswoord, wie het doet en wat die persoon doet.", "Choose a connecting word, who does it and what that person does.", "Wähle ein Bindewort, wer es tut und was die Person tut.", "Choisis un mot de liaison, qui le fait et ce que fait cette personne.")] },
     { n: m("Reageren", "React", "Reagieren", "Réagir"),
       w: m("Antwoorden op wat je gesprekspartner vraagt, of op wat een vriend vertelt.", "Answers to what your partner asks, or to what a friend tells you.", "Antworten auf das, was dein Gesprächspartner fragt, oder auf das, was ein Freund erzählt.", "Réponses à ce que ton interlocuteur demande, ou à ce qu'un ami raconte."),
       k: [m("'Ik vraag': antwoorden op vragen van je partner.", "'I ask': answers to questions from your partner.", "'Ich frage': Antworten auf Fragen deines Partners.", "« Je demande » : réponses aux questions de ton interlocuteur."),
           m("'Vriend vertelt': reageer op een verhaal.", "'A friend tells': respond to a story.", "'Freund erzählt': reagiere auf eine Geschichte.", "« L'ami raconte » : réagis à une histoire."),
           m("Begrepen reacties verdwijnen uit de lijst.", "Understood responses disappear from the list.", "Verstandene Reaktionen verschwinden aus der Liste.", "Les réponses comprises disparaissent de la liste.")] },
     { n: m("Leren", "Learn", "Lernen", "Apprendre"),
-      w: m("Oefenen met kaarten, een quiz en grammatica.", "Practise with flashcards, a quiz and grammar.", "Üben mit Karteikarten, einem Quiz und Grammatik.", "S'entraîner avec des cartes, un quiz et la grammaire."),
+      w: m("Oefenen met kaarten, een quiz, grammatica en patronen.", "Practise with flashcards, a quiz, grammar and patterns.", "Üben mit Karteikarten, einem Quiz, Grammatik und Mustern.", "S'entraîner avec des cartes, un quiz, la grammaire et des modèles."),
       k: [m("Kaarten: markeer wat je al kent als 'gekend'.", "Flashcards: mark what you already know with 'Known'.", "Karten: markiere, was du schon kannst, mit 'Gekonnt'.", "Cartes : marque ce que tu connais déjà avec « Acquis »."),
           m("Quiz: je krijgt de betekenis en kiest uit drie zinnen: één is goed, één bevat een grammaticafout en één betekent iets anders. Bij elk fout antwoord krijg je uitleg.", "Quiz: you see the meaning and choose from three sentences: one is correct, one contains a grammar mistake and one means something else. Every wrong answer comes with an explanation.", "Quiz: Du siehst die Bedeutung und wählst aus drei Sätzen: einer ist richtig, einer enthält einen Grammatikfehler und einer bedeutet etwas anderes. Zu jeder falschen Antwort gibt es eine Erklärung.", "Quiz : tu vois le sens et tu choisis parmi trois phrases : une est correcte, une contient une faute de grammaire et une veut dire autre chose. Chaque mauvaise réponse est expliquée."),
-          m("Grammatica: korte regels met voorbeelden en het waarom.", "Grammar: short rules with examples and the reason.", "Grammatik: kurze Regeln mit Beispielen und dem Warum.", "Grammaire : courtes règles avec exemples et explication.")] },
+          m("Grammatica: korte regels met voorbeelden en het waarom.", "Grammar: short rules with examples and the reason.", "Grammatik: kurze Regeln mit Beispielen und dem Warum.", "Grammaire : courtes règles avec exemples et explication."),
+          m("Patronen: kies een patroon, vul het in met woorden die je al kent en lees je zin hardop voor.", "Patterns: pick a pattern, fill it in with words you already know and read your sentence aloud.", "Muster: wähle ein Muster, fülle es mit Wörtern, die du schon kennst, und lies deinen Satz laut vor.", "Modèles : choisis un modèle, complète-le avec des mots que tu connais déjà et lis ta phrase à voix haute.")] },
     { n: m("Regels", "Rules", "Regeln", "Règles"),
       w: m("Grammatica in het kort, met voorbeelden en een korte test.", "Grammar in brief, with examples and a short test.", "Grammatik kurz gefasst, mit Beispielen und einem kurzen Test.", "La grammaire en bref, avec exemples et un court test."),
       k: [m("Tik op het luidsprekertje om een voorbeeld te horen.", "Tap the speaker icon to hear an example.", "Tippe auf das Lautsprechersymbol, um ein Beispiel zu hören.", "Touche le haut-parleur pour entendre un exemple."),

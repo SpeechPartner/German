@@ -49,6 +49,26 @@
   // Zin bouwen werkt met de Spaanse stammen; die worden eerst bewaard en daarna met de zin vertaald
   globalThis.BOUW_SRC = { stems: {}, cats: BUILDABLE_CATS.slice() };
   Object.keys(BUILD_STEMS).forEach(function (k) { globalThis.BOUW_SRC.stems[k] = BUILD_STEMS[k]; });
+  // Patronen (Leren > Patronen): de voorbeeldzinnen zijn al in de doeltaal (p() draait ze om); de patroonnamen staan hieronder per doeltaal
+  var PL = function (nl, en, de, fr, es) { return { nl: nl, en: en, de: de, fr: fr, es: es }; };
+  var UITL = [
+    ["verleden tijd", "past tense", "Vergangenheit", "passé", "pasado"],
+    ["toestand", "state", "Zustand", "état", "estado"],
+    ["iets graag doen", "doing something you like", "etwas gern tun", "aimer faire quelque chose", "hacer algo con gusto"],
+    ["mening geven", "giving an opinion", "Meinung sagen", "donner son avis", "dar tu opinión"],
+    ["zin met 'als'", "'when' clause", "Wenn-Satz", "phrase avec « quand »", "frase con «cuando»"],
+    ["wens", "wish", "Wunsch", "souhait", "deseo"]
+  ];
+  var PATR = {
+    de: ["Gestern + ich + bin … gegangen", "Heute + ich + bin + …", "Ich + Verb + gern", "Ich glaube + Satz", "Wenn + Satz, + Satz", "Ich möchte + Infinitiv"],
+    fr: ["Hier + je + suis allé à…", "Aujourd'hui + je suis + …", "J'aime + infinitif", "Je crois que + phrase", "Quand + phrase, + phrase", "Je veux + infinitif"],
+    en: ["Yesterday + I + went to…", "Today + I'm + …", "I like + verb-ing", "I think + sentence", "When + clause, + clause", "I want to + infinitive"],
+    nl: ["Gisteren + ik + ging naar…", "Vandaag + ben ik + …", "Ik + werkwoord + graag", "Ik denk dat + zin", "Als + zin, + zin", "Ik wil + infinitief"]
+  };
+  globalThis.PATRONEN = PATTERNS.map(function (pt, i) {
+    var u = UITL[i], pat = (PATR[T] || [])[i] || "";
+    return { label: PL.apply(null, u.map(function (x) { return pat + " (" + x + ")"; })), ex: pt.ex };
+  });
   // Alleen voor het Spaans geschreven: leegmaken
   [GLOSS, ALT_NOTE, BUILD_STEMS, VERB_HINT].forEach(function (o) { Object.keys(o).forEach(function (k) { delete o[k]; }); });
   [PATTERNS, GRAMMAR, BUILDABLE_CATS].forEach(function (a) { a.length = 0; });

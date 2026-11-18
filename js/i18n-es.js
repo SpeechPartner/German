@@ -450,5 +450,12 @@ var ES_UI = {"Andere manieren om dit te zeggen:":"Otras formas de decirlo:",
 "Ik vind dat":"Me parece que",
 "Nou, dan":"Bueno, entonces",
 "Even kijken":"A ver",
-"Wacht, ik denk dat":"Espera, creo que"
+"Wacht, ik denk dat":"Espera, creo que",
+"Kies een startzin en tik op 'Bouw verder →'.":"Elige una frase de inicio y toca «Continuar →».",
+"Kies een verbindingswoord (of geen), wie het doet en wat die persoon doet; de zin verschijnt onder de knoppen.":"Elige una palabra de enlace (o ninguna), quién lo hace y qué hace esa persona; la frase aparece debajo de los botones.",
+"Tik op 'Ontkennend' voor een ontkenning en op het luidsprekertje om de zin te horen.":"Toca «Negativa» para una negación y el altavoz para oír la frase.",
+"Patronen: kies een patroon, vul het in met woorden die je al kent en lees je zin hardop voor.":"Patrones: elige un patrón, complétalo con palabras que ya conoces y lee tu frase en voz alta.",
+"Bouw zelf zinnen vanuit een startzin, met het juiste werkwoord bij de gekozen persoon.":"Construye tus propias frases a partir de una frase de inicio, con la forma correcta del verbo para la persona elegida.",
+"Kies een verbindingswoord, wie het doet en wat die persoon doet.":"Elige una palabra de enlace, quién lo hace y qué hace esa persona.",
+"Oefenen met kaarten, een quiz, grammatica en patronen.":"Practica con tarjetas, un test, gramática y patrones."
 };
