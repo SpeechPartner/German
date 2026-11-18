@@ -403,10 +403,10 @@ var GRAMMAR_DOEL = (function () {
        "Kunnen, moeten, willen, mogen et zullen sont suivis d'un second verbe sans te : ik kan zwemmen, jij moet werken. Ce second verbe va à la fin de la phrase."],
       [["Ik kan goed zwemmen.", "Ik kan goed zwemmen.", "I can swim well.", "Ich kann gut schwimmen.", "Je sais bien nager."],
        ["Jij moet vandaag werken.", "Jij moet vandaag werken.", "You have to work today.", "Du musst heute arbeiten.", "Tu dois travailler aujourd'hui."]],
-      ["Net als in het Duits en Engels: het modale werkwoord staat voorop en de infinitief volgt zonder 'te'. Het Spaans werkt ook zo: puedo nadar.",
-       "As in German and English, the modal comes first and the infinitive follows without te. Spanish works the same way: puedo nadar.",
-       "Wie im Deutschen und Englischen: das Modalverb steht vorn, der Infinitiv folgt ohne te. Im Spanischen ist es auch so: puedo nadar.",
-       "Comme en allemand et en anglais : le modal vient en premier, l'infinitif suit sans te. L'espagnol fait pareil : puedo nadar."]),
+      ["Net als in het Duits en Engels: het modale werkwoord staat voorop en de infinitief volgt zonder 'te'. Het ⟦Spaans⟧ werkt ook zo: puedo nadar.",
+       "As in German and English, the modal comes first and the infinitive follows without te. ⟦Spanish⟧ works the same way: puedo nadar.",
+       "Wie im Deutschen und Englischen: das Modalverb steht vorn, der Infinitiv folgt ohne te. Im ⟦Spanischen⟧ ist es auch so: puedo nadar.",
+       "Comme en allemand et en anglais : le modal vient en premier, l'infinitif suit sans te. L'⟦espagnol⟧ fait pareil : puedo nadar."]),
 
     G(["Vergrotende en overtreffende trap: groter dan", "Comparative and superlative: groter dan", "Komparativ und Superlativ: groter dan", "Le comparatif et le superlatif : groter dan"],
       ["De vergrotende trap krijgt -er: groter, sneller, gevolgd door dan: groter dan. De overtreffende trap krijgt -st of -ste: de snelste, het mooiste.",
@@ -427,10 +427,10 @@ var GRAMMAR_DOEL = (function () {
        "Er is ou er zijn introduit quelque chose qui existe : Er is melk. Er zijn twee stoelen. Le vrai sujet vient après le verbe."],
       [["Er zijn twee stoelen in de kamer.", "Er zijn twee stoelen in de kamer.", "There are two chairs in the room.", "Im Zimmer stehen zwei Stühle.", "Il y a deux chaises dans la pièce."],
        ["Er is geen melk meer.", "Er is geen melk meer.", "There is no milk left.", "Es ist keine Milch mehr da.", "Il n'y a plus de lait."]],
-      ["Het Spaans heeft hay, het Engels there is of there are. Het Nederlands kiest er is bij één ding en er zijn bij meer, ook als het onderwerp later komt.",
-       "Spanish has hay, English has there is or there are. Dutch uses er is for one thing and er zijn for several, even though the subject comes later.",
-       "Im Spanischen gibt es hay, im Englischen there is oder there are. Im Niederländischen steht er is bei einem und er zijn bei mehreren, obwohl das Subjekt später kommt.",
-       "L'espagnol a hay, l'anglais there is ou there are. Le néerlandais dit er is pour un seul élément et er zijn pour plusieurs, même si le sujet vient après."])
+      ["Het ⟦Spaans⟧ heeft hay, het Engels there is of there are. Het Nederlands kiest er is bij één ding en er zijn bij meer, ook als het onderwerp later komt.",
+       "⟦Spanish⟧ has hay, English has there is or there are. Dutch uses er is for one thing and er zijn for several, even though the subject comes later.",
+       "Im ⟦Spanischen⟧ gibt es hay, im Englischen there is oder there are. Im Niederländischen steht er is bei einem und er zijn bei mehreren, obwohl das Subjekt später kommt.",
+       "L'⟦espagnol⟧ a hay, l'anglais there is ou there are. Le néerlandais dit er is pour un seul élément et er zijn pour plusieurs, même si le sujet vient après."])
   ];
 
   return { de: de, en: en, fr: fr, nl: nl };

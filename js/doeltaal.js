@@ -22,6 +22,13 @@ var DOELTAAL = (function () {
   };
   // Zet in een tekst (geschreven in taal tl) de naam van het Spaans om in de naam van de doeltaal
   function taalNaam(tl, s) {
+    if (typeof s !== "string" || s.indexOf("\u27e6") < 0) return naamOm(tl, s);
+    // ⟦…⟧ = naam die echt Spaans bedoelt (bijvoorbeeld in een vergelijking): niet omzetten, haakjes weghalen
+    var keep = [];
+    var t = s.replace(/\u27e6([^\u27e7]*)\u27e7/g, function (_, x) { keep.push(x); return "\u0001" + (keep.length - 1) + "\u0001"; });
+    return naamOm(tl, t).replace(/\u0001(\d+)\u0001/g, function (_, i) { return keep[+i]; });
+  }
+  function naamOm(tl, s) {
     if (T === "es" || typeof s !== "string" || !s) return s;
     s = s.replace(/Partner\.Spanish/g, CFG[T].app.replace("Speech ", ""));
     var n = NAMES[tl][T];
