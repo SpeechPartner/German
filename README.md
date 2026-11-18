@@ -8,4 +8,4 @@ Gebruik niet de repository van de Spaanse app: elke taal heeft zijn eigen reposi
 
 Stemmen: natuurlijke spraak met Piper (open source, MIT). Stem: Thorsten (CC0).
 
-Versie 2.9
+Versie 2.32
