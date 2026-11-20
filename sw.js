@@ -48,6 +48,8 @@ const ASSETS = [
   "./js/spraak-schoon.js",
   "./js/zin-herstel.js",
   "./js/zinnen.js",
+  "./js/woord-herstel.js",
+  "./js/woorden.js",
   "./js/koffie.js",
   "./img/koffiekopje.png",
   "./webshop.html",

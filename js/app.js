@@ -1845,22 +1845,20 @@
     }
     return HEARD_VOCAB[lang];
   }
+  // Losse woorden herstellen (woord-herstel.js): alleen voor Nederlands en Duits, waar het gemeten winst gaf zonder goede
+  // woorden kapot te maken. De vorige correctie (dichtstbijzijnde woord uit het woordenboek) maakte de tekst in alle talen
+  // slechter en wordt niet meer gebruikt.
+  var WH_BRON = null;
   function heardFix(text) {
-    var v = heardVocab(lang), out = [];
-    String(text).split(/(\s+|[.,;:!?¿¡])/).forEach(function (tok) {
-      var n = norm(tok).toLowerCase();
-      if (!n || /^\s+$|^[.,;:!?¿¡]$/.test(tok) || n.length < 4 || v.known[n]) { out.push(tok); return; }
-      var thr = n.length >= 8 ? 2 : 1, best = null, bestD = thr + 1, ties = 0;
-      for (var L = n.length - thr; L <= n.length + thr; L++) {
-        (v.byLen[L] || []).forEach(function (c) {
-          var d = lev(n, c);
-          if (d < bestD) { bestD = d; best = c; ties = 1; }
-          else if (d === bestD && c !== best) ties++;
-        });
+    try {
+      if (!window.WOORD_HERSTEL || !window.WOORDEN_DOEL || typeof DOEL === "undefined" || !WOORD_HERSTEL.talen[DOEL]) return text;
+      if (!WH_BRON) {
+        var app = Object.keys(REVS[lang] || {}).filter(function (w) { return !/\s/.test(w); });
+        (window.ZINNEN_DOEL || []).forEach(function (z) { String(z).split(/[^A-Za-zÀ-ÿœß']+/).forEach(function (w) { if (w) app.push(w); }); });
+        WH_BRON = { app: app, rang: WOORDEN_DOEL.rang, vormen: WOORDEN_DOEL.vormen };
       }
-      out.push(best !== null && ties === 1 ? best : tok);
-    });
-    return out.join("");
+      return WOORD_HERSTEL.herstel(text, DOEL, WH_BRON);
+    } catch (e) { return text; }
   }
   function makeTurn(text) {
     text = heardFix(text);
@@ -2422,10 +2420,10 @@
            "SpeechPartner.Spanish wurde von Abel entworfen und erstellt, in Zusammenarbeit mit Claude (Anthropic). Abel hat das Konzept, den Inhalt und die Herangehensweise entwickelt; Claude hat den Code und die Texte ausgearbeitet und getestet.",
            "SpeechPartner.Spanish a été conçu et créé par Abel, en collaboration avec Claude (Anthropic). Abel a imaginé le concept, le contenu et la démarche ; Claude a développé et testé le code et les textes.") },
     { t: m("Bronnen en licenties", "Sources and licences", "Quellen und Lizenzen", "Sources et licences"),
-      b: m("Woordenlijst: Wiktionary, CC BY-SA 4.0, via kaikki.org. Spraakherkenning: Whisper (OpenAI, MIT-licentie) via Hugging Face en Transformers.js (Apache 2.0). De app zelf is gratis; er wordt niets verkocht.",
-           "Word list: Wiktionary, CC BY-SA 4.0, via kaikki.org. Speech recognition: Whisper (OpenAI, MIT licence) via Hugging Face and Transformers.js (Apache 2.0). The app itself is free; nothing is sold.",
-           "Wortliste: Wiktionary, CC BY-SA 4.0, über kaikki.org. Spracherkennung: Whisper (OpenAI, MIT-Lizenz) über Hugging Face und Transformers.js (Apache 2.0). Die App selbst ist kostenlos; es wird nichts verkauft.",
-           "Liste de mots : Wiktionary, CC BY-SA 4.0, via kaikki.org. Reconnaissance vocale : Whisper (OpenAI, licence MIT) via Hugging Face et Transformers.js (Apache 2.0). L'application est gratuite ; rien n'est vendu.") }
+      b: m("Woordenlijst: Wiktionary, CC BY-SA 4.0, via kaikki.org. Woordfrequenties: FrequencyWords (Hermit Dave), OpenSubtitles 2018, CC BY-SA 4.0. Spraakherkenning: Whisper (OpenAI, MIT-licentie) via Hugging Face en Transformers.js (Apache 2.0). De app zelf is gratis; er wordt niets verkocht.",
+           "Word list: Wiktionary, CC BY-SA 4.0, via kaikki.org. Word frequencies: FrequencyWords (Hermit Dave), OpenSubtitles 2018, CC BY-SA 4.0. Speech recognition: Whisper (OpenAI, MIT licence) via Hugging Face and Transformers.js (Apache 2.0). The app itself is free; nothing is sold.",
+           "Wortliste: Wiktionary, CC BY-SA 4.0, über kaikki.org. Worthäufigkeiten: FrequencyWords (Hermit Dave), OpenSubtitles 2018, CC BY-SA 4.0. Spracherkennung: Whisper (OpenAI, MIT-Lizenz) über Hugging Face und Transformers.js (Apache 2.0). Die App selbst ist kostenlos; es wird nichts verkauft.",
+           "Liste de mots : Wiktionary, CC BY-SA 4.0, via kaikki.org. Fréquences des mots : FrequencyWords (Hermit Dave), OpenSubtitles 2018, CC BY-SA 4.0. Reconnaissance vocale : Whisper (OpenAI, licence MIT) via Hugging Face et Transformers.js (Apache 2.0). L'application est gratuite ; rien n'est vendu.") }
   ];
   // ---------- Overzicht van de tabbladen, instellingen en extra's (Info-pagina) ----------
   var TAB_GUIDE = [
