@@ -1,11 +1,6 @@
 // Inhoud van de gids. Elke zin heeft een Spaanse tekst (es) en een vertaling
 // per taal (m: nl, en, de, fr). Het Spaans zelf blijft Spaans.
-function p(es, nl, en, de, fr) {
-  var N = DOELTAAL.taalNaam;
-  var all = { es: N("es", es), nl: N("nl", nl), en: N("en", en), de: N("de", de), fr: N("fr", fr) };
-  DOELTAAL.flip[es] = all[DOELTAAL.code];
-  return { es: all[DOELTAAL.code], m: all, bron: es };
-}
+function p(es, nl, en, de, fr) { return { es: es, m: m(nl, en, de, fr) }; }
 
 // ---------- Zinnen per categorie ----------
 var PHRASES = {
@@ -446,7 +441,11 @@ var RULES = [
   { titel: m("10. Verleden tijd: -é en -í", "10. Past tense: -é and -í", "10. Vergangenheit: -é und -í", "10. Passé : -é et -í"),
     uitleg: m("Voor iets dat je één keer in het verleden deed. Bij -ar krijgt de ik-vorm de uitgang -é. Bij -er en -ir krijgt de ik-vorm de uitgang -í. Fui betekent ik ging.", "For something you did once in the past. With -ar verbs the I-form ends in -é. With -er and -ir verbs the I-form ends in -í. Fui means I went.", "Für etwas, das du einmal in der Vergangenheit getan hast. Bei -ar endet die ich-Form auf -é. Bei -er und -ir endet die ich-Form auf -í. Fui heißt ich ging.", "Pour une action unique dans le passé. Avec -ar, la forme je finit en -é. Avec -er et -ir, elle finit en -í. Fui veut dire je suis allé."),
     voorbeelden: [["hablé", m("ik sprak", "I spoke", "ich sprach", "j'ai parlé")], ["comí", m("ik at", "I ate", "ich aß", "j'ai mangé")], ["fui al cine", m("ik ging naar de bioscoop", "I went to the cinema", "ich ging ins Kino", "je suis allé au cinéma")]],
-    test: { vraag: m("Hoe zeg je ik at (één keer)?", "How do you say I ate (once)?", "Wie sagt man ich aß (einmal)?", "Comment dit-on j'ai mangé (une fois) ?"), opties: ["como", "comí"], juist: 1 } }
+    test: { vraag: m("Hoe zeg je ik at (één keer)?", "How do you say I ate (once)?", "Wie sagt man ich aß (einmal)?", "Comment dit-on j'ai mangé (une fois) ?"), opties: ["como", "comí"], juist: 1 } },
+  { titel: m("11. Bijvoeglijk naamwoord: -o, -a, -e", "11. Adjective: -o, -a, -e", "11. Adjektiv: -o, -a, -e", "11. Adjectif : -o, -a, -e"),
+    uitleg: m("Het bijvoeglijk naamwoord past zich aan het zelfstandig naamwoord aan. Op -o: alto (m), alta (v), altos (mv m), altas (mv v). Op -e of een medeklinker: één vorm voor man en vrouw (grande, fácil), meervoud grandes, fáciles. Nationaliteiten op een medeklinker krijgen -a bij vrouw: español, española. Het staat meestal achter het zelfstandig naamwoord: una casa grande.", "The adjective agrees with the noun. Ending in -o: alto (m), alta (f), altos (m pl), altas (f pl). Ending in -e or a consonant: one form for masculine and feminine (grande, fácil), plural grandes, fáciles. Nationalities ending in a consonant add -a for feminine: español, española. It usually follows the noun: una casa grande.", "Das Adjektiv richtet sich nach dem Substantiv. Auf -o: alto (m), alta (f), altos (m Pl.), altas (f Pl.). Auf -e oder Konsonant: eine Form für männlich und weiblich (grande, fácil), Plural grandes, fáciles. Nationalitäten auf Konsonant bekommen im Femininum -a: español, española. Es steht meist hinter dem Substantiv: una casa grande.", "L'adjectif s'accorde avec le nom. En -o : alto (m), alta (f), altos (m pl.), altas (f pl.). En -e ou consonne : une seule forme pour le masculin et le féminin (grande, fácil), pluriel grandes, fáciles. Les nationalités en consonne prennent -a au féminin : español, española. Il se place en général après le nom : una casa grande."),
+    voorbeelden: [["un chico alto, una chica alta", m("een lange jongen, een lang meisje", "a tall boy, a tall girl", "ein großer Junge, ein großes Mädchen", "un grand garçon, une grande fille")], ["un libro fácil, una prueba fácil", m("een makkelijk boek, een makkelijke toets", "an easy book, an easy test", "ein leichtes Buch, ein leichter Test", "un livre facile, un test facile")], ["mi amigo español, mi amiga española", m("mijn Spaanse vriend, mijn Spaanse vriendin", "my Spanish friend (m/f)", "mein spanischer Freund, meine spanische Freundin", "mon ami espagnol, mon amie espagnole")]],
+    test: { vraag: m("Welke vorm past? una casa ___ (groot)", "Which form fits? una casa ___ (big)", "Welche Form passt? una casa ___ (groß)", "Quelle forme convient ? una casa ___ (grand)"), opties: ["grando", "grande"], juist: 1 } }
 ];
 
 // ---------- Gesprek: veelgehoorde zinnen van een gesprekspartner ----------
@@ -708,7 +707,6 @@ var ALT_NOTE = {
 // BIJWERKEN: bij elke gebruiksaanpassing (nieuwe knop, tabblad, instelling of gedrag) deze tekst meeveranderen.
 var HELP_GUIDE = [
   { t: m("Begin hier", "Start here", "Hier anfangen", "Commencer ici"), s: [
-    m("Open de app in Safari en kies Deel, dan 'Zet op beginscherm'. Open hem daarna altijd vanaf je beginscherm.", "Open the app in Safari and choose Share, then 'Add to Home Screen'. Always open it from your home screen afterwards.", "Öffne die App in Safari, wähle Teilen und dann 'Zum Home-Bildschirm'. Öffne sie danach immer vom Home-Bildschirm.", "Ouvre l'application dans Safari, choisis Partager, puis « Sur l'écran d'accueil ». Ouvre-la ensuite toujours depuis ton écran d'accueil."),
     m("De tabbladen staan onderaan. Info open je met het ?-knopje in de banner.", "The tabs are at the bottom. Info opens with the ? button in the banner.", "Die Reiter stehen unten. Info öffnest du mit dem ?-Knopf im Banner.", "Les onglets sont en bas. Info s'ouvre avec le bouton ? dans la bannière."),
     m("Tik nogmaals op Info om terug te gaan naar de pagina waar je was.", "Tap Info again to go back to the page you were on.", "Tippe erneut auf Info, um zur vorherigen Seite zurückzukehren.", "Touche de nouveau Info pour revenir à la page précédente.") ] },
   { t: m("Wisselen en bladeren", "Switching and turning pages", "Wechseln und Blättern", "Changer et tourner les pages"), s: [

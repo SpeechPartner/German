@@ -8,6 +8,7 @@ function m(nl, en, de, fr) {
 }
 
 var UI = {
+  "Let op: {w} betekent {b}, niet {l} ({bl}).": m("Let op: {w} betekent {b}, niet {l} ({bl}).", "Note: {w} means {b}, not {l} ({bl}).", "Achtung: {w} bedeutet {b}, nicht {l} ({bl}).", "Attention : {w} signifie {b}, et non {l} ({bl})."),
   "Andere manieren om dit te zeggen:": m("Andere manieren om dit te zeggen:", "Other ways to say this:", "Andere Möglichkeiten, das zu sagen:", "Autres façons de le dire :"),
   "SpeechPartner.Spanish": m("SpeechPartner.Spanish", "SpeechPartner.Spanish", "SpeechPartner.Spanish", "SpeechPartner.Spanish"),
   "Instellingen": m("Instellingen", "Settings", "Einstellungen", "Paramètres"),
