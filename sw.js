@@ -46,6 +46,8 @@ const ASSETS = [
   "./img/achtergrond-kaart.png",
   "./js/piper-tts.js",
   "./js/spraak-schoon.js",
+  "./js/zin-herstel.js",
+  "./js/zinnen.js",
   "./js/koffie.js",
   "./img/koffiekopje.png",
   "./webshop.html",
