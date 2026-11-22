@@ -67,7 +67,10 @@
   };
   globalThis.PATRONEN = PATTERNS.map(function (pt, i) {
     var u = UITL[i], pat = (PATR[T] || [])[i] || "";
-    return { label: PL.apply(null, u.map(function (x) { return pat + " (" + x + ")"; })), ex: pt.ex };
+    // De voorbeeldzin staat in content.js in het Spaans: omdraaien naar de doeltaal (zoals flipObj)
+    var m2 = {}; Object.keys(pt.ex.m).forEach(function (k) { m2[k] = pt.ex.m[k]; });
+    m2.es = N("es", pt.ex.es);
+    return { label: PL.apply(null, u.map(function (x) { return pat + " (" + x + ")"; })), ex: { es: m2[T], m: m2, bron: pt.ex.es } };
   });
   // Alleen voor het Spaans geschreven: leegmaken
   [GLOSS, ALT_NOTE, BUILD_STEMS, VERB_HINT].forEach(function (o) { Object.keys(o).forEach(function (k) { delete o[k]; }); });
