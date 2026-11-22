@@ -27,6 +27,7 @@ var ES_UI = {"Chat met je gesprekspartner en een tolkmodus. Bovenaan de pagina k
 "Wat wil je zeggen?":"¿Qué quieres decir?",
 "Chat":"Chat",
 "Tolkmodus":"Modo intérprete",
+"Of:":"O:",
 "Situaties: lees en beluister een heel gesprek uit 25 situaties, zoals station, restaurant en dokter.":"Situaciones: lee y escucha una conversación entera de 25 situaciones, como la estación, el restaurante y el médico.",
 "Oefenen: de ander zegt iets en jij kiest wat je terugzegt.":"Practicar: la otra persona dice algo y tú eliges qué contestar.",
 "Werkwoorden: kies een situatie en een werkwoord, en zie de zinnen uit dat gesprek waarin het staat.":"Verbos: elige una situación y un verbo, y mira las frases de esa conversación en las que aparece.",
