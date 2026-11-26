@@ -2357,7 +2357,7 @@
   var WH_MODELS = { tiny: "onnx-community/whisper-tiny", base: "onnx-community/whisper-base" };
 
   // Diagnose: elke stap van de spraakroute wordt genoteerd, zodat een fout precies aan te wijzen is.
-  var APP_VERSION = "3.6";
+  var APP_VERSION = "3.7";
   // Versies waarvoor gebruikers de app opnieuw op hun beginscherm moeten zetten (oude icoon weg, nieuwe erop).
   // Bij zo'n update verschijnt eenmalig een melding met uitleg.
   var REINSTALL_VERSIONS = [];
@@ -3597,6 +3597,7 @@
         result.appendChild(el("div", ws.score >= 85 ? "good" : "bad", T("Uitspraakscore") + col + ws.score + "%"));
         result.appendChild(el("div", "heard", T("Herkend") + col + text));
         result.appendChild(el("div", "note", T("Groen = goed, oranje = bijna, rood = nog niet. Tik op een woord om het te horen.")));
+        result.appendChild(el("div", "note", T("De app vergelijkt de opname met het voorbeeld. Speech Partner maakt van je klanken altijd een bestaand woord; luister daarom ook altijd je eigen opname terug.")));
         return;
       }
       var k = KLANK.compare(target, text, lang);
@@ -3609,7 +3610,7 @@
       result.appendChild(el("div", "note", T("Groen = goed, oranje = bijna, rood = nog niet. Tik op een woord om het te horen.")));
       k.msgs.forEach(function (msg) { result.appendChild(el("div", "nl", msg)); });
       if (k.tip) result.appendChild(el("div", "note", T("Tip") + col + k.tip));
-      result.appendChild(el("div", "note", KLANK.note(lang)));
+      result.appendChild(el("div", "note", T("De app vergelijkt de opname met het voorbeeld. Speech Partner maakt van je klanken altijd een bestaand woord; luister daarom ook altijd je eigen opname terug.")));
     }
     // Whisper op de eigen opname (alleen als het model gedownload is)
     function checkWithWhisper() {

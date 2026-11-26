@@ -66,6 +66,7 @@ var ES_UI = {"Chat met je gesprekspartner en een tolkmodus. Bovenaan de pagina k
 "Verstuur als gesprekspartner":"Enviar como interlocutor",
 "Bovenkant omdraaien voor je gesprekspartner":"Girar la parte de arriba para tu interlocutor",
 "Andere manieren om dit te zeggen:":"Otras formas de decirlo:",
+"De app vergelijkt de opname met het voorbeeld. Speech Partner maakt van je klanken altijd een bestaand woord; luister daarom ook altijd je eigen opname terug.":"La app compara la grabación con el ejemplo. Speech Partner siempre convierte tus sonidos en una palabra existente; por eso escucha siempre también tu propia grabación.",
 "Uitspraakscore":"Puntuación de pronunciación",
 "Groen = goed, oranje = bijna, rood = nog niet. Tik op een woord om het te horen.":"Verde = bien, naranja = casi, rojo = todavía no. Toca una palabra para oírla.",
 "Let op: {w} kan meer betekenen: {o}.":"Atención: {w} puede significar varias cosas: {o}.",
